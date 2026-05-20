@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react'
+import { validateEmail, validatePassword, validateName } from '../../utils/validation'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,20 +13,60 @@ const Register = () => {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [passwordStrength, setPasswordStrength] = useState(null)
   
   const { register } = useAuth()
   const navigate = useNavigate()
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+    setFormData({ ...formData, [name]: value })
+    
+    // Real-time password strength check
+    if (name === 'password') {
+      const validation = validatePassword(value)
+      setPasswordStrength(validation)
+    }
+    
+    // Clear field error when typing
+    if (fieldErrors[name]) {
+      setFieldErrors({...fieldErrors, [name]: null})
+    }
+  }
+
+  const validateForm = () => {
+    const errors = {}
+    
+    const nameValidation = validateName(formData.name)
+    if (!nameValidation.isValid) {
+      errors.name = nameValidation.error
+    }
+    
+    if (!formData.email) {
+      errors.email = 'Email is required'
+    } else if (!validateEmail(formData.email)) {
+      errors.email = 'Please enter a valid email address'
+    }
+    
+    const passwordValidation = validatePassword(formData.password)
+    if (!passwordValidation.isValid) {
+      errors.password = Object.values(passwordValidation.errors).find(e => e) || 'Invalid password'
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match'
+    }
+    
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+    if (!validateForm()) {
       return
     }
 
@@ -73,10 +114,16 @@ const Register = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                className={`w-full px-4 py-3 border ${fieldErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent`}
                 placeholder="John Doe"
                 required
               />
+              {fieldErrors.name && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {fieldErrors.name}
+                </p>
+              )}
             </div>
 
             <div>
@@ -88,10 +135,16 @@ const Register = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                className={`w-full px-4 py-3 border ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent`}
                 placeholder="you@example.com"
                 required
               />
+              {fieldErrors.email && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {fieldErrors.email}
+                </p>
+              )}
             </div>
 
             <div>
@@ -103,10 +156,37 @@ const Register = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                className={`w-full px-4 py-3 border ${fieldErrors.password ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent`}
                 placeholder="••••••••"
                 required
               />
+              {fieldErrors.password && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {fieldErrors.password}
+                </p>
+              )}
+              {passwordStrength && formData.password && (
+                <div className="mt-2 space-y-1">
+                  <p className="text-xs font-medium text-gray-700">Password strength:</p>
+                  {Object.entries(passwordStrength.errors).map(([key, error]) => (
+                    error ? (
+                      <p key={key} className="text-xs text-red-600 flex items-center">
+                        <AlertCircle size={12} className="mr-1" />
+                        {error}
+                      </p>
+                    ) : (
+                      <p key={key} className="text-xs text-green-600 flex items-center">
+                        <CheckCircle size={12} className="mr-1" />
+                        {key === 'minLength' && 'At least 8 characters'}
+                        {key === 'hasUpper' && 'Contains uppercase letter'}
+                        {key === 'hasLower' && 'Contains lowercase letter'}
+                        {key === 'hasNumber' && 'Contains number'}
+                      </p>
+                    )
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>
@@ -118,10 +198,16 @@ const Register = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                className={`w-full px-4 py-3 border ${fieldErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent`}
                 placeholder="••••••••"
                 required
               />
+              {fieldErrors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {fieldErrors.confirmPassword}
+                </p>
+              )}
             </div>
 
             <button

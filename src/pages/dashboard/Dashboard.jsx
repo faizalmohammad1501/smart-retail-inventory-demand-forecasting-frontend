@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Package, TrendingUp, DollarSign, AlertTriangle } from 'lucide-react'
+import { Package, TrendingUp, DollarSign, AlertTriangle, RefreshCw } from 'lucide-react'
 import InventoryCard from '../../components/dashboard/InventoryCard'
 import ForecastCard from '../../components/dashboard/ForecastCard'
 import SalesChart from '../../components/dashboard/SalesChart'
 import DemandChart from '../../components/dashboard/DemandChart'
+import { analyticsService } from '../../services/api'
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -12,13 +13,51 @@ const Dashboard = () => {
     totalRevenue: 125430,
     forecastAccuracy: 87
   })
+  const [loading, setLoading] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState(new Date())
+
+  const fetchDashboardData = async () => {
+    setLoading(true)
+    try {
+      // In real app, this would fetch from API
+      // const response = await analyticsService.getDashboardStats()
+      // setStats(response.data)
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      setLastUpdated(new Date())
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Overview of your retail operations</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+          <p className="text-gray-600 mt-1">
+            Overview of your retail operations
+            <span className="text-xs ml-2 text-gray-400">
+              Last updated: {lastUpdated.toLocaleTimeString()}
+            </span>
+          </p>
+        </div>
+        <button
+          onClick={fetchDashboardData}
+          disabled={loading}
+          className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+        >
+          <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+          <span>Refresh</span>
+        </button>
       </div>
 
       {/* Stats Grid */}

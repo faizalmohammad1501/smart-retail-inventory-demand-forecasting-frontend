@@ -1,20 +1,46 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { LogIn } from 'lucide-react'
+import { LogIn, AlertCircle } from 'lucide-react'
+import { validateEmail } from '../../utils/validation'
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({})
   
   const { login } = useAuth()
   const navigate = useNavigate()
 
+  const validateForm = () => {
+    const errors = {}
+    
+    if (!email) {
+      errors.email = 'Email is required'
+    } else if (!validateEmail(email)) {
+      errors.email = 'Please enter a valid email address'
+    }
+    
+    if (!password) {
+      errors.password = 'Password is required'
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters'
+    }
+    
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    
+    if (!validateForm()) {
+      return
+    }
+    
     setLoading(true)
 
     const result = await login(email, password)
@@ -54,11 +80,20 @@ const Login = () => {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  if (fieldErrors.email) setFieldErrors({...fieldErrors, email: null})
+                }}
+                className={`w-full px-4 py-3 border ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent`}
                 placeholder="you@example.com"
                 required
               />
+              {fieldErrors.email && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {fieldErrors.email}
+                </p>
+              )}
             </div>
 
             <div>
@@ -68,11 +103,20 @@ const Login = () => {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  if (fieldErrors.password) setFieldErrors({...fieldErrors, password: null})
+                }}
+                className={`w-full px-4 py-3 border ${fieldErrors.password ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent`}
                 placeholder="••••••••"
                 required
               />
+              {fieldErrors.password && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {fieldErrors.password}
+                </p>
+              )}
             </div>
 
             <button
