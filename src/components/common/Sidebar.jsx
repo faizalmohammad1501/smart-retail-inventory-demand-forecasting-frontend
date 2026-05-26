@@ -5,6 +5,7 @@ import {
   TrendingUp, 
   FileText, 
   Truck,
+  ShoppingCart,
   X 
 } from 'lucide-react'
 
@@ -15,6 +16,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
     { path: '/forecast', icon: TrendingUp, label: 'Forecast' },
     { path: '/reports', icon: FileText, label: 'Reports' },
     { path: '/suppliers', icon: Truck, label: 'Suppliers' },
+    { path: '/orders', icon: ShoppingCart, label: 'Purchase Orders' },
   ]
 
   return (

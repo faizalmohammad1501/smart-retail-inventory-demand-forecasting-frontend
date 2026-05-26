@@ -62,11 +62,26 @@ export const analyticsService = {
 }
 
 export const supplierService = {
-  getAll: () => api.get('/suppliers'),
+  getAll: (params) => api.get('/suppliers', { params }),
   getById: (id) => api.get(`/suppliers/${id}`),
   create: (data) => api.post('/suppliers', data),
   update: (id, data) => api.put(`/suppliers/${id}`, data),
   delete: (id) => api.delete(`/suppliers/${id}`),
+  getProducts: (id) => api.get(`/suppliers/${id}/products`),
+  getPerformance: (id) => api.get(`/suppliers/${id}/performance`),
+  search: (query) => api.get('/suppliers/search', { params: { q: query } }),
+}
+
+export const purchaseOrderService = {
+  getAll: (params) => api.get('/purchase-orders', { params }),
+  getById: (id) => api.get(`/purchase-orders/${id}`),
+  create: (data) => api.post('/purchase-orders', data),
+  update: (id, data) => api.put(`/purchase-orders/${id}`, data),
+  delete: (id) => api.delete(`/purchase-orders/${id}`),
+  updateStatus: (id, status) => api.patch(`/purchase-orders/${id}/status`, { status }),
+  getBySupplier: (supplierId) => api.get(`/purchase-orders/supplier/${supplierId}`),
+  getHistory: (params) => api.get('/purchase-orders/history', { params }),
+  getStatistics: () => api.get('/purchase-orders/statistics'),
 }
 
 export default api
