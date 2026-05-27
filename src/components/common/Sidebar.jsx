@@ -6,6 +6,7 @@ import {
   FileText, 
   Truck,
   ShoppingCart,
+  Bell,
   X 
 } from 'lucide-react'
 
@@ -17,6 +18,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
     { path: '/reports', icon: FileText, label: 'Reports' },
     { path: '/suppliers', icon: Truck, label: 'Suppliers' },
     { path: '/orders', icon: ShoppingCart, label: 'Purchase Orders' },
+    { path: '/notifications', icon: Bell, label: 'Notifications' },
   ]
 
   return (

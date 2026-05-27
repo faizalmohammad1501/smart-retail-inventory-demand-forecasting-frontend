@@ -13,6 +13,7 @@ import Forecast from '../pages/dashboard/Forecast'
 import Reports from '../pages/dashboard/Reports'
 import Suppliers from '../pages/dashboard/Suppliers'
 import Orders from '../pages/dashboard/Orders'
+import Notifications from '../pages/dashboard/Notifications'
 
 const AppRoutes = () => {
   return (
@@ -37,6 +38,7 @@ const AppRoutes = () => {
         <Route path="reports" element={<Reports />} />
         <Route path="suppliers" element={<Suppliers />} />
         <Route path="orders" element={<Orders />} />
+        <Route path="notifications" element={<Notifications />} />
       </Route>
 
       {/* Catch all */}

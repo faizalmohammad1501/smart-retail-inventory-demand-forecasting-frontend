@@ -1,10 +1,27 @@
 import { useState } from 'react'
-import { Menu, Bell, User, LogOut } from 'lucide-react'
+import { Menu, User, LogOut } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useNotifications } from '../../context/NotificationContext'
+import NotificationPanel from '../notifications/NotificationPanel'
+import { useNavigate } from 'react-router-dom'
 
 const Navbar = ({ toggleSidebar }) => {
   const { user, logout } = useAuth()
+  const { 
+    notifications, 
+    markNotificationRead, 
+    markAllNotificationsRead, 
+    removeNotification,
+    clearNotifications 
+  } = useNotifications()
+  const navigate = useNavigate()
   const [showDropdown, setShowDropdown] = useState(false)
+
+  const handleNotificationClick = (notification) => {
+    if (notification.actionUrl) {
+      navigate(notification.actionUrl)
+    }
+  }
 
   return (
     <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-10">
@@ -26,10 +43,14 @@ const Navbar = ({ toggleSidebar }) => {
           {/* Right side */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <button className="p-2 rounded-full hover:bg-gray-100 relative">
-              <Bell size={20} className="text-gray-600" />
-              <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-            </button>
+            <NotificationPanel
+              notifications={notifications}
+              onRead={markNotificationRead}
+              onReadAll={markAllNotificationsRead}
+              onDelete={removeNotification}
+              onClearAll={clearNotifications}
+              onNotificationClick={handleNotificationClick}
+            />
 
             {/* User Menu */}
             <div className="relative">

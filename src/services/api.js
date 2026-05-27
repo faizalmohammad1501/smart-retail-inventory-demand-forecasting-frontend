@@ -84,4 +84,18 @@ export const purchaseOrderService = {
   getStatistics: () => api.get('/purchase-orders/statistics'),
 }
 
+export const notificationService = {
+  getAll: (params) => api.get('/notifications', { params }),
+  getById: (id) => api.get(`/notifications/${id}`),
+  getUnread: () => api.get('/notifications/unread'),
+  getByCategory: (category) => api.get(`/notifications/category/${category}`),
+  markAsRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAllAsRead: () => api.patch('/notifications/read-all'),
+  delete: (id) => api.delete(`/notifications/${id}`),
+  deleteAll: () => api.delete('/notifications/all'),
+  getAlerts: () => api.get('/notifications/alerts'),
+  getSettings: () => api.get('/notifications/settings'),
+  updateSettings: (data) => api.put('/notifications/settings', data),
+}
+
 export default api

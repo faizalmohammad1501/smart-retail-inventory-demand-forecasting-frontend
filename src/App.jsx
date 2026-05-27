@@ -1,5 +1,6 @@
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { NotificationProvider } from './context/NotificationContext'
 import ErrorBoundary from './components/common/ErrorBoundary'
 import AppRoutes from './routes/AppRoutes'
 
@@ -8,7 +9,9 @@ function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <NotificationProvider>
+            <AppRoutes />
+          </NotificationProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>
