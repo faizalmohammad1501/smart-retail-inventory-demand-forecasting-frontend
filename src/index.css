@@ -64,3 +64,40 @@
     }
   }
 }
+
+@media print {
+  body {
+    background: white !important;
+    color: #111827 !important;
+  }
+
+  nav,
+  aside,
+  .no-print,
+  button,
+  input,
+  select,
+  .card:hover {
+    display: none !important;
+  }
+
+  main,
+  .print-page-break {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .card,
+  .print-page-break {
+    page-break-inside: avoid;
+  }
+
+  table {
+    border-collapse: collapse !important;
+  }
+
+  th,
+  td {
+    color: #111827 !important;
+  }
+}

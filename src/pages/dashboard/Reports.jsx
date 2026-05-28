@@ -1,100 +1,382 @@
-import { useState, useEffect } from 'react'
-import { Download, FileText, TrendingUp, DollarSign, ShoppingCart, Package } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { TrendingUp, DollarSign, ShoppingCart, Package, Truck, FileText } from 'lucide-react'
 import DemandChart from '../../components/dashboard/DemandChart'
 import MetricCard from '../../components/analytics/MetricCard'
 import TrendChart from '../../components/analytics/TrendChart'
 import CategoryChart from '../../components/analytics/CategoryChart'
-import DateRangePicker from '../../components/common/DateRangePicker'
-import { calculateGrowthRate, categorizeProducts } from '../../utils/analyticsUtils'
+import ReportFilterPanel from '../../components/reports/ReportFilterPanel'
+import ReportTable from '../../components/reports/ReportTable'
+import ReportExportActions from '../../components/reports/ReportExportActions'
+import { calculateGrowthRate, calculateForecastAccuracy, formatDateRange } from '../../utils/analyticsUtils'
+import { buildReportRows, downloadCsv, formatCurrency, formatDate, getPrintableDateRange } from '../../utils/reportUtils'
 
 const Reports = () => {
-  const [dateRange, setDateRange] = useState('30days')
-  const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState('overview') // overview, sales, inventory, category
+  const [filters, setFilters] = useState({
+    preset: '30days',
+    startDate: '',
+    endDate: '',
+    category: 'All',
+    supplier: 'All',
+    status: 'all',
+    search: '',
+  })
+  const [activeTab, setActiveTab] = useState('sales')
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 8
 
-  const stats = {
-    totalSales: 125430,
-    previousSales: 112000,
-    unitsSold: 3245,
-    previousUnits: 2980,
-    avgOrderValue: 38.65,
-    previousAvg: 39.45,
-    forecastAccuracy: 87,
-    previousAccuracy: 84
-  }
-
-  const salesData = [
-    { month: 'Jan', revenue: 98000, units: 2450, orders: 245 },
-    { month: 'Feb', revenue: 87000, units: 2180, orders: 218 },
-    { month: 'Mar', revenue: 125000, units: 3125, orders: 312 },
-    { month: 'Apr', revenue: 112000, units: 2800, orders: 280 },
-    { month: 'May', revenue: 145000, units: 3625, orders: 362 },
-    { month: 'Jun', revenue: 138000, units: 3450, orders: 345 },
+  const categories = ['All', 'Electronics', 'Clothing', 'Food & Beverages', 'Home & Garden']
+  const suppliers = ['All', 'Fresh Supply Co', 'Global Wholesale', 'MarketSource', 'Harbor Traders']
+  const statuses = [
+    { value: 'all', label: 'All Statuses' },
+    { value: 'Completed', label: 'Completed' },
+    { value: 'Pending', label: 'Pending' },
+    { value: 'Returned', label: 'Returned' },
+    { value: 'Cancelled', label: 'Cancelled' },
   ]
 
-  const categoryPerformance = [
-    { name: 'Electronics', value: 35, revenue: 43900, color: '#3B82F6' },
-    { name: 'Clothing', value: 25, revenue: 31350, color: '#10B981' },
-    { name: 'Food & Beverages', value: 20, revenue: 25086, color: '#F59E0B' },
-    { name: 'Home & Garden', value: 12, revenue: 15052, color: '#EF4444' },
-    { name: 'Other', value: 8, revenue: 10034, color: '#8B5CF6' },
+  const salesTransactions = [
+    { date: '2026-05-05', orderId: 'ORD-1001', customer: 'Sapphire Retail', product: 'Store POS Kit', category: 'Electronics', supplier: 'Fresh Supply Co', status: 'Completed', amount: 1540 },
+    { date: '2026-05-06', orderId: 'ORD-1002', customer: 'Luna Grocers', product: 'Bulk Packing Tape', category: 'Home & Garden', supplier: 'MarketSource', status: 'Completed', amount: 890 },
+    { date: '2026-05-07', orderId: 'ORD-1003', customer: 'North End Apparel', product: 'Premium Shirt Display', category: 'Clothing', supplier: 'Global Wholesale', status: 'Pending', amount: 2350 },
+    { date: '2026-05-09', orderId: 'ORD-1004', customer: 'Harvest Fresh', product: 'Smart Scale Bundle', category: 'Food & Beverages', supplier: 'Fresh Supply Co', status: 'Completed', amount: 1725 },
+    { date: '2026-05-11', orderId: 'ORD-1005', customer: 'Urban Comfort', product: 'Energy Efficient Lights', category: 'Home & Garden', supplier: 'Harbor Traders', status: 'Returned', amount: 690 },
+    { date: '2026-05-14', orderId: 'ORD-1006', customer: 'Bright Goods', product: 'RFID Tag Roll', category: 'Electronics', supplier: 'Global Wholesale', status: 'Completed', amount: 1190 },
+    { date: '2026-05-16', orderId: 'ORD-1007', customer: 'Market Lane', product: 'Gondola Shelving', category: 'Home & Garden', supplier: 'MarketSource', status: 'Completed', amount: 2780 },
+    { date: '2026-05-18', orderId: 'ORD-1008', customer: 'Peak Traders', product: 'Backroom Barcode Scanner', category: 'Electronics', supplier: 'Fresh Supply Co', status: 'Cancelled', amount: 980 },
+    { date: '2026-05-20', orderId: 'ORD-1009', customer: 'City Threads', product: 'Custom Hangars', category: 'Clothing', supplier: 'Harbor Traders', status: 'Completed', amount: 720 },
+    { date: '2026-05-22', orderId: 'ORD-1010', customer: 'Fresh Basket', product: 'Temperature Monitor', category: 'Food & Beverages', supplier: 'MarketSource', status: 'Pending', amount: 1360 },
+    { date: '2026-05-24', orderId: 'ORD-1011', customer: 'Latitude Shops', product: 'Shelf Edge Labels', category: 'Home & Garden', supplier: 'Global Wholesale', status: 'Completed', amount: 540 },
+    { date: '2026-05-26', orderId: 'ORD-1012', customer: 'Value Depot', product: 'Wireless Payment Pad', category: 'Electronics', supplier: 'Fresh Supply Co', status: 'Completed', amount: 2180 },
   ]
 
-  const topProducts = [
-    { name: 'Product A', sales: 25400, units: 845, growth: 15.2, category: 'Electronics' },
-    { name: 'Product C', sales: 22100, units: 732, growth: 12.8, category: 'Clothing' },
-    { name: 'Product D', sales: 19800, units: 658, growth: 8.5, category: 'Electronics' },
-    { name: 'Product E', sales: 18500, units: 615, growth: 6.2, category: 'Home & Garden' },
-    { name: 'Product F', sales: 16200, units: 540, growth: 4.8, category: 'Food & Beverages' },
+  const inventoryRecords = [
+    { product: 'Store POS Kit', category: 'Electronics', supplier: 'Fresh Supply Co', stock: 120, unitPrice: 125, reorderPoint: 40, status: 'Healthy' },
+    { product: 'Gondola Shelving', category: 'Home & Garden', supplier: 'MarketSource', stock: 24, unitPrice: 310, reorderPoint: 20, status: 'Low Stock' },
+    { product: 'RFID Tag Roll', category: 'Electronics', supplier: 'Global Wholesale', stock: 430, unitPrice: 2.5, reorderPoint: 150, status: 'Healthy' },
+    { product: 'Custom Hangars', category: 'Clothing', supplier: 'Harbor Traders', stock: 180, unitPrice: 4.8, reorderPoint: 80, status: 'Healthy' },
+    { product: 'Temperature Monitor', category: 'Food & Beverages', supplier: 'MarketSource', stock: 36, unitPrice: 39, reorderPoint: 30, status: 'Low Stock' },
+    { product: 'Shelf Edge Labels', category: 'Home & Garden', supplier: 'Global Wholesale', stock: 260, unitPrice: 1.8, reorderPoint: 120, status: 'Healthy' },
+    { product: 'Smart Scale Bundle', category: 'Food & Beverages', supplier: 'Fresh Supply Co', stock: 50, unitPrice: 34.5, reorderPoint: 40, status: 'Healthy' },
+    { product: 'Backroom Barcode Scanner', category: 'Electronics', supplier: 'Fresh Supply Co', stock: 14, unitPrice: 79, reorderPoint: 20, status: 'Low Stock' },
   ]
 
-  const handleExport = (reportType) => {
-    console.log(`Exporting ${reportType} report...`)
-    // In production: Implement actual export functionality
-  }
+  const supplierPerformance = [
+    { supplier: 'Fresh Supply Co', onTimeRate: 95, orders: 42, spend: 34500 },
+    { supplier: 'Global Wholesale', onTimeRate: 91, orders: 28, spend: 22800 },
+    { supplier: 'MarketSource', onTimeRate: 88, orders: 24, spend: 19650 },
+    { supplier: 'Harbor Traders', onTimeRate: 83, orders: 19, spend: 13870 },
+  ]
+
+  const forecastData = [
+    { period: 'Jun', demand: 4200, forecast: 4100, confidence: 90 },
+    { period: 'Jul', demand: 4500, forecast: 4380, confidence: 88 },
+    { period: 'Aug', demand: 4600, forecast: 4480, confidence: 87 },
+    { period: 'Sep', demand: 4700, forecast: 4620, confidence: 89 },
+    { period: 'Oct', demand: 4900, forecast: 4780, confidence: 91 },
+  ]
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: TrendingUp },
-    { id: 'sales', label: 'Sales Analysis', icon: DollarSign },
-    { id: 'inventory', label: 'Inventory Analytics', icon: Package },
-    { id: 'category', label: 'Category Performance', icon: ShoppingCart },
+    { id: 'sales', label: 'Sales', icon: DollarSign },
+    { id: 'inventory', label: 'Inventory', icon: Package },
+    { id: 'suppliers', label: 'Supplier', icon: Truck },
+    { id: 'forecast', label: 'Forecast', icon: TrendingUp },
   ]
+
+  const selectedRange = useMemo(() => {
+    if (filters.preset !== 'custom') {
+      return formatDateRange(filters.preset)
+    }
+
+    return {
+      startDate: filters.startDate ? new Date(filters.startDate) : null,
+      endDate: filters.endDate ? new Date(filters.endDate) : null,
+    }
+  }, [filters.preset, filters.startDate, filters.endDate])
+
+  const filteredTransactions = useMemo(() => {
+    const searchTerm = filters.search.toLowerCase().trim()
+
+    return salesTransactions.filter((transaction) => {
+      if (selectedRange.startDate && selectedRange.endDate) {
+        const transactionDate = new Date(transaction.date)
+        if (transactionDate < selectedRange.startDate || transactionDate > selectedRange.endDate) {
+          return false
+        }
+      }
+
+      if (filters.category !== 'All' && transaction.category !== filters.category) {
+        return false
+      }
+
+      if (filters.supplier !== 'All' && transaction.supplier !== filters.supplier) {
+        return false
+      }
+
+      if (filters.status !== 'all' && transaction.status !== filters.status) {
+        return false
+      }
+
+      if (searchTerm.length > 0) {
+        const searchFields = [transaction.orderId, transaction.product, transaction.customer, transaction.supplier, transaction.category]
+        if (!searchFields.some((field) => field.toLowerCase().includes(searchTerm))) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [filters, selectedRange])
+
+  const salesTrendData = useMemo(() => {
+    const map = {}
+
+    filteredTransactions.forEach((transaction) => {
+      const month = new Date(transaction.date).toLocaleString('en-US', { month: 'short' })
+      if (!map[month]) {
+        map[month] = { month, revenue: 0, units: 0, orders: 0 }
+      }
+      map[month].revenue += transaction.amount
+      map[month].units += 1
+      map[month].orders += 1
+    })
+
+    return Object.values(map)
+  }, [filteredTransactions])
+
+  const categoryBreakdown = useMemo(() => {
+    const breakdown = {}
+
+    filteredTransactions.forEach((transaction) => {
+      if (!breakdown[transaction.category]) {
+        breakdown[transaction.category] = { name: transaction.category, value: 0, revenue: 0, color: '#3B82F6' }
+      }
+      breakdown[transaction.category].value += 1
+      breakdown[transaction.category].revenue += transaction.amount
+    })
+
+    return Object.values(breakdown).map((item, index) => ({
+      ...item,
+      color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'][index % 5],
+    }))
+  }, [filteredTransactions])
+
+  const totalRevenue = useMemo(() => filteredTransactions.reduce((sum, transaction) => sum + transaction.amount, 0), [filteredTransactions])
+  const totalOrders = filteredTransactions.length
+  const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
+  const completedOrders = filteredTransactions.filter((transaction) => transaction.status === 'Completed').length
+  const completionRate = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0
+
+  const inventoryHealthSummary = useMemo(() => {
+    const totalValue = inventoryRecords.reduce((sum, item) => sum + item.stock * item.unitPrice, 0)
+    const lowStock = inventoryRecords.filter((item) => item.stock <= item.reorderPoint).length
+    return { totalValue, lowStock, productsNearReorder: lowStock }
+  }, [inventoryRecords])
+
+  const supplierSummary = useMemo(() => {
+    const totalSpend = supplierPerformance.reduce((sum, supplier) => sum + supplier.spend, 0)
+    return {
+      totalSpend,
+      topSupplier: supplierPerformance.sort((a, b) => b.onTimeRate - a.onTimeRate)[0]?.supplier || 'N/A',
+    }
+  }, [supplierPerformance])
+
+  const forecastAccuracy = useMemo(
+    () => calculateForecastAccuracy(forecastData.map((item) => item.demand), forecastData.map((item) => item.forecast)),
+    [forecastData]
+  )
+
+  const handleFilterChange = (field, value) => {
+    setFilters((prev) => ({ ...prev, [field]: value }))
+    setCurrentPage(1)
+  }
+
+  const handleDateChange = (value) => {
+    if (value.preset) {
+      setFilters((prev) => ({ ...prev, preset: value.preset, startDate: '', endDate: '' }))
+    } else {
+      setFilters((prev) => ({ ...prev, preset: 'custom', ...value }))
+    }
+    setCurrentPage(1)
+  }
+
+  const clearFilters = () => {
+    setFilters({
+      preset: '30days',
+      startDate: '',
+      endDate: '',
+      category: 'All',
+      supplier: 'All',
+      status: 'all',
+      search: '',
+    })
+    setCurrentPage(1)
+  }
+
+  const handleExportCsv = (typeLabel) => {
+    let rows = []
+
+    if (activeTab === 'inventory') {
+      rows = buildReportRows(inventoryRecords, {
+        product: 'Product',
+        category: 'Category',
+        supplier: 'Supplier',
+        stock: 'Stock Level',
+        unitPrice: 'Unit Price',
+        reorderPoint: 'Reorder Point',
+        status: 'Status',
+      })
+    } else if (activeTab === 'suppliers') {
+      rows = buildReportRows(supplierPerformance, {
+        supplier: 'Supplier',
+        onTimeRate: 'On-time Rate',
+        orders: 'Orders',
+        spend: 'Spend',
+      })
+    } else if (activeTab === 'forecast') {
+      rows = buildReportRows(forecastData, {
+        period: 'Period',
+        demand: 'Demand',
+        forecast: 'Forecast',
+        confidence: 'Confidence (%)',
+      })
+    } else {
+      rows = buildReportRows(filteredTransactions, {
+        date: 'Date',
+        orderId: 'Order ID',
+        customer: 'Customer',
+        product: 'Product',
+        category: 'Category',
+        supplier: 'Supplier',
+        status: 'Status',
+        amount: 'Amount',
+      })
+    }
+
+    const filename = `${typeLabel || activeTab}-report-${new Date().toISOString().slice(0, 10)}.csv`
+    downloadCsv(filename, rows)
+  }
+
+  const handleExportSummary = () => {
+    const rows = [
+      { Metric: 'Selected Date Range', Value: getPrintableDateRange(filters) },
+      { Metric: 'Total Revenue', Value: formatCurrency(totalRevenue) },
+      { Metric: 'Order Count', Value: totalOrders },
+      { Metric: 'Average Order Value', Value: formatCurrency(averageOrderValue) },
+      { Metric: 'Completion Rate', Value: `${completionRate}%` },
+      { Metric: 'Inventory Value', Value: formatCurrency(inventoryHealthSummary.totalValue) },
+      { Metric: 'Supplier Spend', Value: formatCurrency(supplierSummary.totalSpend) },
+      { Metric: 'Forecast Accuracy', Value: `${forecastAccuracy.toFixed(1)}%` },
+    ]
+
+    downloadCsv(`reports-summary-${new Date().toISOString().slice(0, 10)}.csv`, rows)
+  }
+
+  const handleSavePdf = () => {
+    window.print()
+  }
+
+  const tableConfig = useMemo(() => {
+    if (activeTab === 'inventory') {
+      return {
+        title: 'Inventory Status',
+        columns: [
+          { key: 'product', label: 'Product' },
+          { key: 'category', label: 'Category' },
+          { key: 'supplier', label: 'Supplier' },
+          { key: 'stock', label: 'Stock' },
+          { key: 'unitPrice', label: 'Unit Price', render: (row) => formatCurrency(row.unitPrice) },
+          { key: 'reorderPoint', label: 'Reorder Level' },
+          { key: 'status', label: 'Status' },
+        ],
+        data: inventoryRecords,
+      }
+    }
+
+    if (activeTab === 'suppliers') {
+      return {
+        title: 'Supplier Performance',
+        columns: [
+          { key: 'supplier', label: 'Supplier' },
+          { key: 'onTimeRate', label: 'On-time Rate', render: (row) => `${row.onTimeRate}%` },
+          { key: 'orders', label: 'Orders' },
+          { key: 'spend', label: 'Spend', render: (row) => formatCurrency(row.spend) },
+        ],
+        data: supplierPerformance,
+      }
+    }
+
+    if (activeTab === 'forecast') {
+      return {
+        title: 'Forecast Summary',
+        columns: [
+          { key: 'period', label: 'Period' },
+          { key: 'demand', label: 'Demand' },
+          { key: 'forecast', label: 'Forecast' },
+          { key: 'confidence', label: 'Confidence' },
+        ],
+        data: forecastData,
+      }
+    }
+
+    return {
+      title: 'Sales Transactions',
+      columns: [
+        { key: 'date', label: 'Date', render: (row) => formatDate(row.date) },
+        { key: 'orderId', label: 'Order ID' },
+        { key: 'customer', label: 'Customer' },
+        { key: 'product', label: 'Product' },
+        { key: 'category', label: 'Category' },
+        { key: 'supplier', label: 'Supplier' },
+        { key: 'status', label: 'Status' },
+        { key: 'amount', label: 'Amount', render: (row) => formatCurrency(row.amount) },
+      ],
+      data: filteredTransactions,
+    }
+  }, [activeTab, filteredTransactions, inventoryRecords, supplierPerformance, forecastData])
+
+  const tabsClasses = (tabId) =>
+    `flex items-center gap-2 pb-3 border-b-2 transition-colors whitespace-nowrap ${
+      activeTab === tabId ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'
+    }`
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Reports & Analytics</h1>
-          <p className="text-gray-600 mt-1">Comprehensive insights and detailed reports</p>
+          <h1 className="text-3xl font-bold text-gray-900">Reports & Export Management</h1>
+          <p className="text-gray-600 mt-1">Generate sales, inventory, supplier, and forecast reports with export and print-ready output.</p>
         </div>
-        <button
-          onClick={() => handleExport('full')}
-          className="btn-primary flex items-center space-x-2 px-4 py-2"
-        >
-          <Download size={20} />
-          <span>Export Report</span>
-        </button>
       </div>
 
-      {/* Date Range Selector */}
-      <div className="card">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Report Period</h3>
-        <DateRangePicker value={dateRange} onChange={(value) => setDateRange(value.preset || value)} />
-      </div>
+      <ReportExportActions
+        onExportCsv={handleExportCsv}
+        onExportSummary={handleExportSummary}
+        onSavePdf={handleSavePdf}
+        reportLabel={activeTab}
+      />
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <div className="flex space-x-8 overflow-x-auto">
+      <ReportFilterPanel
+        filters={filters}
+        categories={categories}
+        suppliers={suppliers}
+        statuses={statuses}
+        onDateChange={handleDateChange}
+        onFilterChange={handleFilterChange}
+        onClear={clearFilters}
+      />
+
+      <div className="card no-print">
+        <h2 className="text-lg font-semibold text-gray-900">Report Sections</h2>
+        <div className="mt-4 flex flex-wrap gap-3">
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center space-x-2 pb-3 border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              type="button"
+              onClick={() => {
+                setActiveTab(tab.id)
+                setCurrentPage(1)
+              }}
+              className={tabsClasses(tab.id)}
             >
               <tab.icon size={18} />
               <span className="font-medium">{tab.label}</span>
@@ -103,272 +385,107 @@ const Reports = () => {
         </div>
       </div>
 
-      {/* Overview Tab */}
-      {activeTab === 'overview' && (
-        <>
-          {/* Summary Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <MetricCard
-              title="Total Sales"
-              value={`$${(stats.totalSales / 1000).toFixed(1)}K`}
-              change={calculateGrowthRate(stats.totalSales, stats.previousSales).toFixed(1)}
-              changeLabel="vs previous period"
-              icon={DollarSign}
-              color="green"
-              loading={loading}
-            />
-            <MetricCard
-              title="Units Sold"
-              value={stats.unitsSold.toLocaleString()}
-              change={calculateGrowthRate(stats.unitsSold, stats.previousUnits).toFixed(1)}
-              changeLabel="vs previous period"
-              icon={ShoppingCart}
-              color="blue"
-              loading={loading}
-            />
-            <MetricCard
-              title="Avg Order Value"
-              value={`$${stats.avgOrderValue.toFixed(2)}`}
-              change={calculateGrowthRate(stats.avgOrderValue, stats.previousAvg).toFixed(1)}
-              changeLabel="vs previous period"
-              icon={TrendingUp}
-              color="purple"
-              loading={loading}
-            />
-            <MetricCard
-              title="Forecast Accuracy"
-              value={`${stats.forecastAccuracy}%`}
-              change={calculateGrowthRate(stats.forecastAccuracy, stats.previousAccuracy).toFixed(1)}
-              changeLabel="improvement"
-              icon={Package}
-              color="indigo"
-              loading={loading}
-            />
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <MetricCard
+          title="Revenue"
+          value={formatCurrency(totalRevenue)}
+          change={calculateGrowthRate(totalRevenue, totalRevenue * 0.9).toFixed(1)}
+          changeLabel="vs goal"
+          icon={DollarSign}
+          color="green"
+        />
+        <MetricCard
+          title="Orders"
+          value={totalOrders.toString()}
+          change={calculateGrowthRate(totalOrders, Math.max(totalOrders - 3, 1)).toFixed(1)}
+          changeLabel="vs last period"
+          icon={ShoppingCart}
+          color="blue"
+        />
+        <MetricCard
+          title="Avg Order Value"
+          value={formatCurrency(averageOrderValue)}
+          change={calculateGrowthRate(averageOrderValue, averageOrderValue * 0.95).toFixed(1)}
+          changeLabel="vs last month"
+          icon={TrendingUp}
+          color="purple"
+        />
+        <MetricCard
+          title="Completion Rate"
+          value={`${completionRate}%`}
+          change={calculateGrowthRate(completionRate, Math.max(completionRate - 10, 1)).toFixed(1)}
+          changeLabel="orders completed"
+          icon={FileText}
+          color="indigo"
+        />
+      </div>
 
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <TrendChart
-              title="Revenue Trend"
-              data={salesData}
-              dataKeys={['revenue']}
-              colors={['#3B82F6']}
-            />
-            <DemandChart />
-          </div>
-        </>
-      )}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-2 space-y-6">
+          <TrendChart
+            title="Revenue Trend"
+            data={salesTrendData.length > 0 ? salesTrendData : [{ month: 'May', revenue: 0, units: 0, orders: 0 }]}
+            dataKeys={['revenue']}
+            colors={['#3B82F6']}
+          />
+          <TrendChart
+            title="Sales Volume"
+            data={salesTrendData.length > 0 ? salesTrendData : [{ month: 'May', revenue: 0, units: 0, orders: 0 }]}
+            dataKeys={['units']}
+            colors={['#F59E0B']}
+          />
+        </div>
+        <CategoryChart
+          title="Category Revenue Mix"
+          data={categoryBreakdown.length > 0 ? categoryBreakdown : [{ name: 'No Data', value: 1, color: '#3B82F6' }]}
+        />
+      </div>
 
-      {/* Sales Analysis Tab */}
-      {activeTab === 'sales' && (
-        <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <TrendChart
-              title="Monthly Revenue"
-              data={salesData}
-              dataKeys={['revenue']}
-              colors={['#10B981']}
-            />
-            <TrendChart
-              title="Units Sold"
-              data={salesData}
-              dataKeys={['units']}
-              colors={['#F59E0B']}
-            />
-          </div>
-
-          {/* Top Products Table */}
-          <div className="card">
-            <h3 className="text-lg font-semibold mb-4">Top Performing Products</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sales</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Units</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Growth</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {topProducts.map((product, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold">
-                          {index + 1}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{product.name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{product.category}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-green-600">${product.sales.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{product.units.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-sm">
-                        <span className="text-green-600 font-medium">+{product.growth}%</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Inventory Analytics Tab */}
-      {activeTab === 'inventory' && (
-        <>
+      {activeTab !== 'forecast' ? (
+        <ReportTable
+          title={tableConfig.title}
+          columns={tableConfig.columns}
+          data={tableConfig.data}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+        />
+      ) : (
+        <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <MetricCard
-              title="Total Stock Value"
-              value="$245K"
-              change={8.3}
-              icon={Package}
+              title="Forecast Accuracy"
+              value={`${forecastAccuracy.toFixed(1)}%`}
+              change={calculateGrowthRate(forecastAccuracy, Math.max(forecastAccuracy - 3, 1)).toFixed(1)}
+              changeLabel="vs previous forecast"
+              icon={TrendingUp}
               color="blue"
             />
             <MetricCard
-              title="Stock Turnover Rate"
-              value="5.2x"
-              change={12.5}
-              icon={TrendingUp}
+              title="Expected Demand"
+              value="4.8K"
+              change={3.8}
+              icon={ShoppingCart}
               color="green"
             />
             <MetricCard
-              title="Avg Days in Stock"
-              value="28 days"
-              change={-5.4}
-              icon={TrendingUp}
+              title="Supplier Reliability"
+              value={supplierSummary.topSupplier}
+              icon={Truck}
               color="purple"
             />
           </div>
-
           <DemandChart />
-
-          <div className="card">
-            <h3 className="text-lg font-semibold mb-4">Stock Level Distribution</h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-green-700 font-medium">In Stock</p>
-                <p className="text-2xl font-bold text-green-900 mt-1">75%</p>
-              </div>
-              <div className="p-4 bg-yellow-50 rounded-lg">
-                <p className="text-sm text-yellow-700 font-medium">Low Stock</p>
-                <p className="text-2xl font-bold text-yellow-900 mt-1">18%</p>
-              </div>
-              <div className="p-4 bg-red-50 rounded-lg">
-                <p className="text-sm text-red-700 font-medium">Out of Stock</p>
-                <p className="text-2xl font-bold text-red-900 mt-1">7%</p>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Category Performance Tab */}
-      {activeTab === 'category' && (
-        <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <CategoryChart
-              title="Sales by Category"
-              data={categoryPerformance}
-            />
-            <div className="card">
-              <h3 className="text-lg font-semibold mb-4">Category Revenue Breakdown</h3>
-              <div className="space-y-4">
-                {categoryPerformance.map((cat, index) => (
-                  <div key={index}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">{cat.name}</span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        ${cat.revenue.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="h-2 rounded-full transition-all"
-                        style={{
-                          width: `${cat.value}%`,
-                          backgroundColor: cat.color
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <h3 className="text-lg font-semibold mb-4">Category Insights</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {categoryPerformance.map((cat, index) => (
-                <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-900">{cat.name}</h4>
-                    <div
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: cat.color }}
-                    ></div>
-                  </div>
-                  <p className="text-2xl font-bold text-gray-900 mb-1">
-                    ${cat.revenue.toLocaleString()}
-                  </p>
-                  <p className="text-sm text-gray-600">{cat.value}% of total sales</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Available Reports */}
-      <div className="card">
-        <h3 className="text-lg font-semibold mb-4">Download Detailed Reports</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            {
-              title: 'Complete Sales Report',
-              desc: 'Comprehensive sales analysis with charts and metrics',
-              type: 'sales'
-            },
-            {
-              title: 'Inventory Status Report',
-              desc: 'Detailed inventory levels and valuation',
-              type: 'inventory'
-            },
-            {
-              title: 'Demand Forecast Report',
-              desc: 'AI-generated demand predictions and insights',
-              type: 'forecast'
-            },
-            {
-              title: 'Supplier Performance Report',
-              desc: 'Supplier metrics and delivery statistics',
-              type: 'supplier'
-            },
-          ].map((report, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-primary hover:shadow-md transition-all cursor-pointer"
-              onClick={() => handleExport(report.type)}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-primary bg-opacity-10 rounded-lg">
-                  <FileText size={24} className="text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900">{report.title}</h4>
-                  <p className="text-sm text-gray-600">{report.desc}</p>
-                </div>
-              </div>
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <Download size={20} className="text-primary" />
-              </button>
-            </div>
-          ))}
+          <ReportTable
+            title={tableConfig.title}
+            columns={tableConfig.columns}
+            data={tableConfig.data}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+          />
         </div>
-      </div>
+      )}
     </div>
   )
 }
