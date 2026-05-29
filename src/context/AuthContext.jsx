@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 
 const AuthContext = createContext(null)
@@ -83,12 +82,17 @@ export const AuthProvider = ({ children }) => {
     delete api.defaults.headers.common['Authorization']
   }
 
+  const updateUser = (updates) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : prev))
+  }
+
   const value = {
     user,
     loading,
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user
   }
 

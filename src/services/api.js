@@ -98,4 +98,26 @@ export const notificationService = {
   updateSettings: (data) => api.put('/notifications/settings', data),
 }
 
+export const profileService = {
+  getProfile: () => api.get('/profile'),
+  updateProfile: (data) => api.put('/profile', data),
+  changePassword: (data) => api.put('/profile/password', data),
+}
+
+export const settingsService = {
+  getAll: () => api.get('/settings'),
+  getBySection: (section) => api.get(`/settings/${section}`),
+  update: (section, data) => api.put(`/settings/${section}`, data),
+}
+
+export const userService = {
+  getAll: (params) => api.get('/users', { params }),
+  getById: (id) => api.get(`/users/${id}`),
+  create: (data) => api.post('/users', data),
+  update: (id, data) => api.put(`/users/${id}`, data),
+  delete: (id) => api.delete(`/users/${id}`),
+  updateRole: (id, role) => api.patch(`/users/${id}/role`, { role }),
+  updatePermissions: (id, permissions) => api.patch(`/users/${id}/permissions`, { permissions }),
+}
+
 export default api

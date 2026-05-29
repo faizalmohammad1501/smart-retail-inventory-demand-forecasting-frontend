@@ -7,6 +7,9 @@ import {
   Truck,
   ShoppingCart,
   Bell,
+  Users,
+  UserCircle2,
+  Settings,
   X 
 } from 'lucide-react'
 
@@ -19,6 +22,9 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
     { path: '/suppliers', icon: Truck, label: 'Suppliers' },
     { path: '/orders', icon: ShoppingCart, label: 'Purchase Orders' },
     { path: '/notifications', icon: Bell, label: 'Notifications' },
+    { path: '/users', icon: Users, label: 'Users' },
+    { path: '/profile', icon: UserCircle2, label: 'Profile' },
+    { path: '/settings', icon: Settings, label: 'Settings' },
   ]
 
   return (

@@ -14,6 +14,9 @@ import Reports from '../pages/dashboard/Reports'
 import Suppliers from '../pages/dashboard/Suppliers'
 import Orders from '../pages/dashboard/Orders'
 import Notifications from '../pages/dashboard/Notifications'
+import Profile from '../pages/dashboard/Profile'
+import Settings from '../pages/dashboard/Settings'
+import UserManagement from '../pages/dashboard/UserManagement'
 
 const AppRoutes = () => {
   return (
@@ -39,6 +42,9 @@ const AppRoutes = () => {
         <Route path="suppliers" element={<Suppliers />} />
         <Route path="orders" element={<Orders />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="users" element={<UserManagement />} />
       </Route>
 
       {/* Catch all */}
