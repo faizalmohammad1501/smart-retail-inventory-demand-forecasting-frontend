@@ -4,6 +4,7 @@ import SettingSection from '../../components/settings/SettingSection'
 import ToggleSwitch from '../../components/settings/ToggleSwitch'
 import FeedbackBanner from '../../components/settings/FeedbackBanner'
 import { settingsService } from '../../services/api'
+import { Alert, FormField, Divider } from '../../components/ui'
 
 const Settings = () => {
   const [settings, setSettings] = useState({
@@ -67,11 +68,11 @@ const Settings = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-800">Settings</h1>
-        <p className="mt-1 text-gray-600">Configure store preferences, dashboard behavior, and system controls.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Settings</h1>
+        <p className="mt-2 text-sm sm:text-base text-gray-600">Configure store preferences, dashboard behavior, and system controls.</p>
       </div>
 
-      <FeedbackBanner type={feedback.type} message={feedback.message} />
+      {feedback.message && <FeedbackBanner type={feedback.type} message={feedback.message} />}
 
       <SettingSection
         title="Store Preferences"
@@ -86,63 +87,62 @@ const Settings = () => {
               locale: settings.locale,
             })}
             disabled={savingSection === 'store'}
-            className="btn-primary"
+            className="btn-primary text-sm sm:text-base"
           >
             {savingSection === 'store' ? 'Saving...' : 'Save Store'}
           </button>
         }
       >
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Store Name</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <FormField label="Store Name">
             <div className="relative">
-              <Store size={16} className="absolute left-3 top-3 text-gray-400" />
+              <Store size={16} className="absolute left-3 top-3 text-gray-400 pointer-events-none" />
               <input
                 type="text"
                 value={settings.storeName}
                 onChange={(e) => updateRootField('storeName', e.target.value)}
-                className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="form-input pl-9"
+                placeholder="Store name"
               />
             </div>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Currency</label>
+          </FormField>
+          <FormField label="Currency">
             <select
               value={settings.currency}
               onChange={(e) => updateRootField('currency', e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="form-input"
             >
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
               <option value="INR">INR</option>
             </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Timezone</label>
+          </FormField>
+          <FormField label="Timezone">
             <select
               value={settings.timezone}
               onChange={(e) => updateRootField('timezone', e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="form-input"
             >
               <option value="UTC-05:00">UTC-05:00</option>
               <option value="UTC+00:00">UTC+00:00</option>
               <option value="UTC+05:30">UTC+05:30</option>
             </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Locale</label>
+          </FormField>
+          <FormField label="Locale">
             <select
               value={settings.locale}
               onChange={(e) => updateRootField('locale', e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="form-input"
             >
               <option value="en-US">English (US)</option>
               <option value="en-GB">English (UK)</option>
               <option value="en-IN">English (IN)</option>
             </select>
-          </div>
+          </FormField>
         </div>
       </SettingSection>
+
+      <Divider />
 
       <SettingSection
         title="Notification Preferences"
@@ -152,13 +152,13 @@ const Settings = () => {
             type="button"
             onClick={() => saveSection('notifications', settings.notifications)}
             disabled={savingSection === 'notifications'}
-            className="btn-primary"
+            className="btn-primary text-sm sm:text-base"
           >
             {savingSection === 'notifications' ? 'Saving...' : 'Save Notifications'}
           </button>
         }
       >
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <ToggleSwitch
             checked={settings.notifications.lowStockEmail}
             onChange={(value) => updateNestedField('notifications', 'lowStockEmail', value)}
@@ -186,6 +186,8 @@ const Settings = () => {
         </div>
       </SettingSection>
 
+      <Divider />
+
       <SettingSection
         title="Dashboard Customization"
         description="Choose what widgets appear by default for dashboard users."
@@ -194,13 +196,13 @@ const Settings = () => {
             type="button"
             onClick={() => saveSection('dashboard', settings.dashboard)}
             disabled={savingSection === 'dashboard'}
-            className="btn-primary"
+            className="btn-primary text-sm sm:text-base"
           >
             {savingSection === 'dashboard' ? 'Saving...' : 'Save Dashboard'}
           </button>
         }
       >
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <ToggleSwitch
             checked={settings.dashboard.showRevenue}
             onChange={(value) => updateNestedField('dashboard', 'showRevenue', value)}
@@ -228,6 +230,8 @@ const Settings = () => {
         </div>
       </SettingSection>
 
+      <Divider />
+
       <SettingSection
         title="System Configuration"
         description="Control platform-level operations and security defaults."
@@ -236,14 +240,14 @@ const Settings = () => {
             type="button"
             onClick={() => saveSection('system', settings.system)}
             disabled={savingSection === 'system'}
-            className="btn-primary"
+            className="btn-primary text-sm sm:text-base"
           >
             {savingSection === 'system' ? 'Saving...' : 'Save System'}
           </button>
         }
       >
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="space-y-4">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <ToggleSwitch
               checked={settings.system.maintenanceMode}
               onChange={(value) => updateNestedField('system', 'maintenanceMode', value)}
@@ -256,8 +260,6 @@ const Settings = () => {
               label="Auto backup"
               description="Perform daily encrypted data backup."
             />
-          </div>
-          <div className="space-y-4">
             <ToggleSwitch
               checked={settings.system.auditLogs}
               onChange={(value) => updateNestedField('system', 'auditLogs', value)}
@@ -271,43 +273,38 @@ const Settings = () => {
               description="Enforce two-factor auth for privileged users."
             />
           </div>
-        </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Low stock threshold</label>
-            <input
-              type="number"
-              min={1}
-              value={settings.lowStockThreshold}
-              onChange={(e) => updateRootField('lowStockThreshold', Number(e.target.value))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Default forecast horizon (days)</label>
-            <input
-              type="number"
-              min={7}
-              value={settings.defaultForecastHorizon}
-              onChange={(e) => updateRootField('defaultForecastHorizon', Number(e.target.value))}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <FormField label="Low stock threshold">
+              <input
+                type="number"
+                min={1}
+                value={settings.lowStockThreshold}
+                onChange={(e) => updateRootField('lowStockThreshold', Number(e.target.value))}
+                className="form-input"
+                placeholder="Enter units"
+              />
+            </FormField>
+            <FormField label="Default forecast horizon (days)">
+              <input
+                type="number"
+                min={7}
+                value={settings.defaultForecastHorizon}
+                onChange={(e) => updateRootField('defaultForecastHorizon', Number(e.target.value))}
+                className="form-input"
+                placeholder="Enter days"
+              />
+            </FormField>
           </div>
         </div>
       </SettingSection>
 
-      <div className="card border border-blue-100 bg-blue-50">
-        <div className="flex items-start gap-3">
-          <SettingsIcon size={20} className="mt-0.5 text-blue-700" />
-          <div>
-            <p className="text-sm font-semibold text-blue-800">Configuration impact</p>
-            <p className="mt-1 text-sm text-blue-700">
-              Changes to notification, dashboard, and system sections are applied instantly for new sessions and can affect role permissions behavior.
-            </p>
-          </div>
-        </div>
-      </div>
+      <Alert 
+        variant="info" 
+        title="Configuration Impact"
+        message="Changes to notification, dashboard, and system sections are applied instantly for new sessions and can affect role permissions behavior."
+        dismissible
+      />
     </div>
   )
 }

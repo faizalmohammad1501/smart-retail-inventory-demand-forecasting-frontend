@@ -9,6 +9,7 @@ import ReportTable from '../../components/reports/ReportTable'
 import ReportExportActions from '../../components/reports/ReportExportActions'
 import { calculateGrowthRate, calculateForecastAccuracy, formatDateRange } from '../../utils/analyticsUtils'
 import { buildReportRows, downloadCsv, formatCurrency, formatDate, getPrintableDateRange } from '../../utils/reportUtils'
+import { EmptyState, Badge } from '../../components/ui'
 
 const Reports = () => {
   const [filters, setFilters] = useState({
@@ -343,8 +344,8 @@ const Reports = () => {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Reports & Export Management</h1>
-          <p className="text-gray-600 mt-1">Generate sales, inventory, supplier, and forecast reports with export and print-ready output.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Reports & Export Management</h1>
+          <p className="text-gray-600 mt-1 text-sm md:text-base">Generate sales, inventory, supplier, and forecast reports with export and print-ready output.</p>
         </div>
       </div>
 
@@ -367,7 +368,7 @@ const Reports = () => {
 
       <div className="card no-print">
         <h2 className="text-lg font-semibold text-gray-900">Report Sections</h2>
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-4 flex flex-wrap gap-2 md:gap-3">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -379,13 +380,13 @@ const Reports = () => {
               className={tabsClasses(tab.id)}
             >
               <tab.icon size={18} />
-              <span className="font-medium">{tab.label}</span>
+              <span className="font-medium hidden sm:inline">{tab.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <MetricCard
           title="Revenue"
           value={formatCurrency(totalRevenue)}
@@ -420,39 +421,69 @@ const Reports = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 space-y-6">
-          <TrendChart
-            title="Revenue Trend"
-            data={salesTrendData.length > 0 ? salesTrendData : [{ month: 'May', revenue: 0, units: 0, orders: 0 }]}
-            dataKeys={['revenue']}
-            colors={['#3B82F6']}
-          />
-          <TrendChart
-            title="Sales Volume"
-            data={salesTrendData.length > 0 ? salesTrendData : [{ month: 'May', revenue: 0, units: 0, orders: 0 }]}
-            dataKeys={['units']}
-            colors={['#F59E0B']}
-          />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          {salesTrendData.length > 0 ? (
+            <TrendChart
+              title="Revenue Trend"
+              data={salesTrendData}
+              dataKeys={['revenue']}
+              colors={['#3B82F6']}
+            />
+          ) : (
+            <div className="card">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Trend</h3>
+              <EmptyState type="noData" description="No revenue data available for the selected date range" />
+            </div>
+          )}
+          {salesTrendData.length > 0 ? (
+            <TrendChart
+              title="Sales Volume"
+              data={salesTrendData}
+              dataKeys={['units']}
+              colors={['#F59E0B']}
+            />
+          ) : (
+            <div className="card">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Volume</h3>
+              <EmptyState type="noData" description="No sales volume data available" />
+            </div>
+          )}
         </div>
-        <CategoryChart
-          title="Category Revenue Mix"
-          data={categoryBreakdown.length > 0 ? categoryBreakdown : [{ name: 'No Data', value: 1, color: '#3B82F6' }]}
-        />
+        <div>
+          {categoryBreakdown.length > 0 ? (
+            <CategoryChart
+              title="Category Revenue Mix"
+              data={categoryBreakdown}
+            />
+          ) : (
+            <div className="card">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Revenue Mix</h3>
+              <EmptyState type="noData" description="No category data available" />
+            </div>
+          )}
+        </div>
       </div>
 
       {activeTab !== 'forecast' ? (
-        <ReportTable
-          title={tableConfig.title}
-          columns={tableConfig.columns}
-          data={tableConfig.data}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-        />
+        tableConfig.data.length > 0 ? (
+          <ReportTable
+            title={tableConfig.title}
+            columns={tableConfig.columns}
+            data={tableConfig.data}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+          />
+        ) : (
+          <div className="card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{tableConfig.title}</h2>
+            <EmptyState type="noResults" description="No data matches your current filters. Try adjusting your search criteria." />
+          </div>
+        )
       ) : (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-4 md:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             <MetricCard
               title="Forecast Accuracy"
               value={`${forecastAccuracy.toFixed(1)}%`}
@@ -476,14 +507,21 @@ const Reports = () => {
             />
           </div>
           <DemandChart />
-          <ReportTable
-            title={tableConfig.title}
-            columns={tableConfig.columns}
-            data={tableConfig.data}
-            currentPage={currentPage}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-          />
+          {tableConfig.data.length > 0 ? (
+            <ReportTable
+              title={tableConfig.title}
+              columns={tableConfig.columns}
+              data={tableConfig.data}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          ) : (
+            <div className="card">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">{tableConfig.title}</h2>
+              <EmptyState type="noData" description="No forecast data available" />
+            </div>
+          )}
         </div>
       )}
     </div>
