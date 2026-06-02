@@ -1,22 +1,25 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import ProtectedRoute from '../components/common/ProtectedRoute'
 import DashboardLayout from '../layouts/DashboardLayout'
+import { PageLoader } from '../components/ui'
 
-// Auth Pages
+// Auth Pages — keep eager-loaded (entry points)
 import Login from '../pages/auth/Login'
 import Register from '../pages/auth/Register'
 
-// Dashboard Pages
-import Dashboard from '../pages/dashboard/Dashboard'
-import Inventory from '../pages/dashboard/Inventory'
-import Forecast from '../pages/dashboard/Forecast'
-import Reports from '../pages/dashboard/Reports'
-import Suppliers from '../pages/dashboard/Suppliers'
-import Orders from '../pages/dashboard/Orders'
-import Notifications from '../pages/dashboard/Notifications'
-import Profile from '../pages/dashboard/Profile'
-import Settings from '../pages/dashboard/Settings'
-import UserManagement from '../pages/dashboard/UserManagement'
+// Dashboard Pages — lazy-loaded for code splitting
+const Dashboard      = lazy(() => import('../pages/dashboard/Dashboard'))
+const Inventory      = lazy(() => import('../pages/dashboard/Inventory'))
+const Forecast       = lazy(() => import('../pages/dashboard/Forecast'))
+const Reports        = lazy(() => import('../pages/dashboard/Reports'))
+const Suppliers      = lazy(() => import('../pages/dashboard/Suppliers'))
+const Orders         = lazy(() => import('../pages/dashboard/Orders'))
+const Notifications  = lazy(() => import('../pages/dashboard/Notifications'))
+const Profile        = lazy(() => import('../pages/dashboard/Profile'))
+const Settings       = lazy(() => import('../pages/dashboard/Settings'))
+const UserManagement = lazy(() => import('../pages/dashboard/UserManagement'))
+const NotFound       = lazy(() => import('../pages/NotFound'))
 
 const AppRoutes = () => {
   return (
@@ -35,20 +38,20 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="inventory" element={<Inventory />} />
-        <Route path="forecast" element={<Forecast />} />
-        <Route path="reports" element={<Reports />} />
-        <Route path="suppliers" element={<Suppliers />} />
-        <Route path="orders" element={<Orders />} />
-        <Route path="notifications" element={<Notifications />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="users" element={<UserManagement />} />
+        <Route path="dashboard"     element={<Suspense fallback={<PageLoader message="Loading dashboard…" />}><Dashboard /></Suspense>} />
+        <Route path="inventory"     element={<Suspense fallback={<PageLoader message="Loading inventory…" />}><Inventory /></Suspense>} />
+        <Route path="forecast"      element={<Suspense fallback={<PageLoader message="Loading forecast…" />}><Forecast /></Suspense>} />
+        <Route path="reports"       element={<Suspense fallback={<PageLoader message="Loading reports…" />}><Reports /></Suspense>} />
+        <Route path="suppliers"     element={<Suspense fallback={<PageLoader message="Loading suppliers…" />}><Suppliers /></Suspense>} />
+        <Route path="orders"        element={<Suspense fallback={<PageLoader message="Loading orders…" />}><Orders /></Suspense>} />
+        <Route path="notifications" element={<Suspense fallback={<PageLoader message="Loading notifications…" />}><Notifications /></Suspense>} />
+        <Route path="profile"       element={<Suspense fallback={<PageLoader message="Loading profile…" />}><Profile /></Suspense>} />
+        <Route path="settings"      element={<Suspense fallback={<PageLoader message="Loading settings…" />}><Settings /></Suspense>} />
+        <Route path="users"         element={<Suspense fallback={<PageLoader message="Loading users…" />}><UserManagement /></Suspense>} />
       </Route>
 
-      {/* Catch all */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Catch all — dedicated 404 page */}
+      <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
     </Routes>
   )
 }

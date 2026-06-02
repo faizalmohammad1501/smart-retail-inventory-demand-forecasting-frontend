@@ -5,9 +5,10 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 s global timeout
 })
 
-// Request interceptor
+// ── Request interceptor ────────────────────────────────────────────────────────
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
@@ -16,24 +17,38 @@ api.interceptors.request.use(
     }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
-// Response interceptor
+// ── Response interceptor ───────────────────────────────────────────────────────
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status
+
+    if (status === 401) {
       localStorage.removeItem('token')
       window.location.href = '/login'
+      return Promise.reject(error)
     }
+
+    if (status === 403) {
+      // Access denied — caller handles the UI feedback
+      return Promise.reject(
+        new Error(error.response?.data?.message || 'Access denied.')
+      )
+    }
+
+    if (status >= 500) {
+      return Promise.reject(
+        new Error('A server error occurred. Please try again later.')
+      )
+    }
+
     return Promise.reject(error)
   }
 )
 
-// API service methods
 export const authService = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
@@ -118,6 +133,21 @@ export const userService = {
   delete: (id) => api.delete(`/users/${id}`),
   updateRole: (id, role) => api.patch(`/users/${id}/role`, { role }),
   updatePermissions: (id, permissions) => api.patch(`/users/${id}/permissions`, { permissions }),
+}
+
+export const reportsService = {
+  getSalesReport: (params) => api.get('/reports/sales', { params }),
+  getInventoryReport: (params) => api.get('/reports/inventory', { params }),
+  getForecastReport: (params) => api.get('/reports/forecast', { params }),
+  exportCSV: (reportType, params) =>
+    api.get(`/reports/${reportType}/export/csv`, { params, responseType: 'blob' }),
+  exportPDF: (reportType, params) =>
+    api.get(`/reports/${reportType}/export/pdf`, { params, responseType: 'blob' }),
+}
+
+// ── Health check ───────────────────────────────────────────────────────────────
+export const healthService = {
+  ping: () => api.get('/health', { timeout: 5000 }),
 }
 
 export default api

@@ -1,206 +1,273 @@
-# Smart Retail Inventory & Demand Forecasting Platform - Frontend
+# Smart Retail Inventory & Demand Forecasting Platform — Frontend
 
-A modern React-based frontend application for managing retail inventory and demand forecasting using AI-powered predictions.
-
-## 🚀 Features
-
-- **Dashboard**: Real-time overview of inventory, sales, and forecasts
-- **Inventory Management**: Track and manage product stock levels
-- **Demand Forecasting**: AI-powered demand predictions and recommendations
-- **Reports & Analytics**: Detailed insights and downloadable reports
-- **Supplier Management**: Manage supplier relationships and performance
-- **Authentication**: Secure login and registration system
-- **Responsive Design**: Mobile-first responsive UI with Tailwind CSS
-
-## 🛠️ Tech Stack
-
-- **React 18** - UI Library
-- **Vite** - Build tool and dev server
-- **React Router v6** - Client-side routing
-- **Tailwind CSS** - Utility-first CSS framework
-- **Axios** - HTTP client for API integration
-- **Recharts** - Chart library for data visualization
-- **Lucide React** - Icon library
-
-## 📋 Prerequisites
-
-Before running this application, ensure you have the following installed:
-
-- **Node.js** (v18 or higher) - [Download here](https://nodejs.org/)
-- **npm** (comes with Node.js) or **yarn**
-
-## 🔧 Installation & Setup
-
-1. **Install Node.js** (if not already installed):
-   - Download from: https://nodejs.org/
-   - Verify installation: `node -v` and `npm -v`
-
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables**:
-   - The `.env` file is already configured with default values
-   - Update `VITE_API_BASE_URL` if your backend runs on a different port
-
-4. **Start Development Server**:
-   ```bash
-   npm run dev
-   ```
-   The application will open at `http://localhost:3000`
-
-## 📁 Project Structure
-
-```
-smart-retail-frontend/
-├── public/                 # Static assets
-├── src/
-│   ├── assets/            # Images and icons
-│   ├── components/        # Reusable components
-│   │   ├── common/       # Navbar, Sidebar, Loader, etc.
-│   │   └── dashboard/    # Dashboard-specific components
-│   ├── pages/            # Page components
-│   │   ├── auth/         # Login, Register
-│   │   └── dashboard/    # Dashboard pages
-│   ├── layouts/          # Layout wrappers
-│   ├── services/         # API service and configuration
-│   ├── context/          # React Context (Auth)
-│   ├── routes/           # Route configuration
-│   ├── hooks/            # Custom React hooks
-│   ├── utils/            # Utility functions
-│   ├── App.jsx           # Main App component
-│   ├── main.jsx          # Application entry point
-│   └── index.css         # Global styles
-├── .env                  # Environment variables
-├── package.json          # Dependencies and scripts
-├── vite.config.js        # Vite configuration
-├── tailwind.config.js    # Tailwind CSS configuration
-└── postcss.config.js     # PostCSS configuration
-```
-
-## 🎨 Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-
-## 🔌 API Integration
-
-The application uses Axios for API communication. API endpoints are configured in:
-- `src/services/api.js` - Main API configuration with interceptors
-- Base URL: `http://localhost:8000/api` (configurable in `.env`)
-
-### Available Services:
-- **authService** - Login, Register, Profile
-- **inventoryService** - CRUD operations for inventory
-- **forecastService** - Demand and sales forecasting
-- **analyticsService** - Dashboard stats and reports
-- **supplierService** - Supplier management
-
-## 🎯 Key Features Implemented
-
-### Authentication
-- JWT-based authentication with token storage
-- Protected routes with automatic redirect
-- Auth context for global user state management
-
-### Dashboard
-- Real-time statistics cards
-- Sales and demand charts
-- Forecast predictions with confidence levels
-- Alert notifications
-
-### Inventory Management
-- Product listing with search and filters
-- Stock level tracking
-- Status indicators (In Stock, Low Stock, Out of Stock)
-
-### Demand Forecasting
-- AI-powered predictions
-- Product-wise forecast breakdown
-- Recommendation engine
-- Configurable time ranges
-
-### Reports & Analytics
-- Sales performance metrics
-- Top performing products
-- Downloadable reports
-- Customizable date ranges
-
-### Supplier Management
-- Supplier directory
-- Contact information management
-- Performance tracking
-- Rating system
-
-## 🎨 UI Components
-
-### Common Components
-- **Navbar** - Top navigation with user menu
-- **Sidebar** - Left navigation menu
-- **Loader** - Loading spinner
-- **ProtectedRoute** - Route guard for authentication
-
-### Dashboard Components
-- **InventoryCard** - Metric display card
-- **ForecastCard** - Forecast prediction card
-- **SalesChart** - Line chart for sales trends
-- **DemandChart** - Bar chart for demand analysis
-
-## 🔐 Authentication Flow
-
-1. User logs in via `/login`
-2. Token stored in localStorage
-3. Token added to all API requests via Axios interceptor
-4. Protected routes check for valid token
-5. Auto-redirect to login if unauthorized (401)
-
-## 📱 Responsive Design
-
-The application is fully responsive with breakpoints:
-- **Mobile**: < 768px
-- **Tablet**: 768px - 1024px
-- **Desktop**: > 1024px
-
-## 🚀 Deployment
-
-To build for production:
-
-```bash
-npm run build
-```
-
-The optimized files will be in the `dist/` folder, ready to deploy to:
-- Vercel
-- Netlify
-- AWS S3 + CloudFront
-- Any static hosting service
-
-## 🔗 Backend Integration
-
-This frontend is designed to work with the Smart Retail Backend API. Ensure the backend is running and accessible at the URL configured in `.env`.
-
-## 📝 Notes
-
-- The application uses mock data for demonstration when backend is not connected
-- All API calls include proper error handling
-- Token refresh logic can be added to the API interceptors
-- The design follows modern UI/UX best practices
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## 📄 License
-
-This project is part of the Smart Retail Platform.
+A production-ready React 18 + Vite frontend for managing retail inventory, demand forecasting, supplier relationships, purchase orders, analytics, and team access control.
 
 ---
 
-**Built with ❤️ using React + Vite + Tailwind CSS**
+## Table of Contents
+
+1. [Features](#features)
+2. [Tech Stack](#tech-stack)
+3. [Prerequisites](#prerequisites)
+4. [Quick Start](#quick-start)
+5. [Environment Variables](#environment-variables)
+6. [Project Structure](#project-structure)
+7. [Available Scripts](#available-scripts)
+8. [API Integration](#api-integration)
+9. [Routing & Route Protection](#routing--route-protection)
+10. [State Management](#state-management)
+11. [Performance Optimizations](#performance-optimizations)
+12. [Deployment](#deployment)
+13. [Browser Support](#browser-support)
+
+---
+
+## Features
+
+| Module | Description |
+|---|---|
+| **Authentication** | JWT login/register, protected routes, RBAC |
+| **Dashboard** | Real-time KPI cards, sales & demand charts, alerts |
+| **Inventory Management** | CRUD, search, filter, pagination, stock status |
+| **Demand Forecasting** | AI predictions, product-wise breakdown, recommendations |
+| **Analytics** | Sales reports, inventory health, trend charts |
+| **Supplier Management** | Supplier directory, performance ratings, contact info |
+| **Purchase Orders** | Order lifecycle, status tracking, supplier linkage |
+| **Notifications** | Smart alerts, mark-read, category filters |
+| **Reports & Export** | CSV/PDF export, date-range filtering, print view |
+| **Settings** | Store prefs, notifications config, system settings |
+| **User Management** | Role-based access, permission matrix, invite/remove users |
+| **Profile** | Personal info, password change, progress tracker |
+
+---
+
+## Tech Stack
+
+| Layer | Library / Tool |
+|---|---|
+| UI | React 18 |
+| Build | Vite 5 |
+| Routing | React Router v6 |
+| Styling | Tailwind CSS 3 |
+| HTTP | Axios (interceptors, timeout, 401/403/5xx handling) |
+| Charts | Recharts 2 |
+| Icons | Lucide React |
+| State | React Context API (AuthContext, NotificationContext) |
+| Code quality | ESLint (react, react-hooks, react-refresh plugins) |
+
+---
+
+## Prerequisites
+
+- **Node.js** v18 or later — [nodejs.org](https://nodejs.org/)
+- **npm** v9+ (bundled with Node.js)
+- A running instance of the Smart Retail Backend API
+
+---
+
+## Quick Start
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/faizalmohammad1501/smart-retail-inventory-demand-forecasting-frontend.git
+cd smart-retail-inventory-demand-forecasting-frontend
+
+# 2. Install dependencies
+npm install
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env and set VITE_API_BASE_URL to your backend URL
+
+# 4. Start the dev server
+npm run dev
+# Opens http://localhost:3000
+```
+
+---
+
+## Environment Variables
+
+Copy `.env.example` to `.env` (development) or `.env.production` (production build):
+
+| Variable | Description | Default |
+|---|---|---|
+| `VITE_API_BASE_URL` | Backend REST API base URL | `http://localhost:8000/api` |
+| `VITE_APP_NAME` | Application display name | `Smart Retail Platform` |
+| `VITE_APP_ENV` | Environment tag | `development` |
+
+> All Vite env vars must be prefixed with `VITE_` to be exposed to the browser bundle.
+
+---
+
+## Project Structure
+
+```
+src/
+├── assets/                  # Static images & fonts
+├── components/
+│   ├── common/              # Shared: Navbar, Sidebar, Loader, ProtectedRoute,
+│   │                        #         ErrorBoundary, AppInitializer
+│   ├── dashboard/           # DashboardCard, SalesChart, DemandChart, …
+│   ├── reports/             # ReportTable, ExportButtons
+│   ├── settings/            # SettingSection, ToggleSwitch, PermissionMatrix,
+│   │                        #   FeedbackBanner, ConfirmActionDialog
+│   └── ui/                  # Design-system primitives: Button, Badge, Alert,
+│                            #   Tabs, Modal, FormField, SkeletonLoader, …
+├── constants/
+│   └── uiConfig.js          # Design tokens, breakpoints, animation keys
+├── context/
+│   ├── AuthContext.jsx      # user, login, logout, updateUser
+│   └── NotificationContext.jsx
+├── hooks/
+│   ├── useCustomHooks.js    # useFetch, useForm
+│   ├── useUIEnhancements.js # useResponsive, useDebounce, useOutsideClick
+│   └── useApiRequest.js     # Imperative one-off API call hook
+├── layouts/
+│   └── DashboardLayout.jsx  # Navbar + Sidebar + per-page ErrorBoundary
+├── pages/
+│   ├── auth/                # Login, Register
+│   ├── dashboard/           # Dashboard, Inventory, Forecast, Reports,
+│   │                        #   Suppliers, Orders, Notifications, Profile,
+│   │                        #   Settings, UserManagement
+│   └── NotFound.jsx         # 404 page
+├── routes/
+│   └── AppRoutes.jsx        # All routes; dashboard pages are lazy-loaded
+├── services/
+│   └── api.js               # Axios instance + all service groups
+│                            # (auth, inventory, forecast, analytics,
+│                            #  supplier, purchaseOrder, notification,
+│                            #  profile, settings, user, reports, health)
+├── utils/
+│   ├── accessibilityUtils.js
+│   └── performanceUtils.js  # formatCurrency, formatNumber, debounce, groupBy, …
+├── App.jsx
+├── main.jsx
+└── index.css                # Tailwind base + 70+ custom utility classes
+```
+
+---
+
+## Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start Vite dev server on port 3000 |
+| `npm run build` | Production build → `dist/` |
+| `npm run build:staging` | Staging build (uses `.env.staging`) |
+| `npm run preview` | Preview production build on port 4173 |
+| `npm run lint` | ESLint (zero warnings policy) |
+| `npm run lint:fix` | ESLint with auto-fix |
+
+---
+
+## API Integration
+
+All HTTP communication goes through `src/services/api.js`:
+
+- **Base URL** — read from `VITE_API_BASE_URL`  
+- **Auth** — Bearer token injected from `localStorage` on every request  
+- **Timeout** — 30 s global; 5 s for health checks  
+- **401** — Clears token and redirects to `/login`  
+- **403** — Rejects with a human-readable "Access denied" message  
+- **5xx** — Rejects with "A server error occurred. Please try again later."
+
+Available service groups: `authService`, `inventoryService`, `forecastService`,  
+`analyticsService`, `supplierService`, `purchaseOrderService`,  
+`notificationService`, `profileService`, `settingsService`,  
+`userService`, `reportsService`, `healthService`.
+
+### useApiRequest hook
+
+For imperative/mutation calls (form submits, button actions):
+
+```jsx
+import useApiRequest from '../hooks/useApiRequest'
+
+const { execute, loading, error } = useApiRequest()
+
+const handleSave = async () => {
+  await execute(
+    () => inventoryService.update(id, payload),
+    {
+      onSuccess: () => toast('Saved!'),
+      onError: (msg) => toast.error(msg),
+    }
+  )
+}
+```
+
+---
+
+## Routing & Route Protection
+
+All dashboard routes are wrapped in `<ProtectedRoute>`, which:
+
+1. Shows a loader while auth state initialises
+2. Redirects unauthenticated users to `/login`
+3. Accepts an optional `roles` prop for role-based access control:
+
+```jsx
+<Route
+  path="users"
+  element={
+    <ProtectedRoute roles={['admin']}>
+      <Suspense fallback={<PageLoader />}><UserManagement /></Suspense>
+    </ProtectedRoute>
+  }
+/>
+```
+
+All dashboard page components are **lazy-loaded** via `React.lazy` + `Suspense`, producing separate JS chunks per route for faster initial load.
+
+---
+
+## State Management
+
+| Store | Contents |
+|---|---|
+| `AuthContext` | `user`, `loading`, `login()`, `register()`, `logout()`, `updateUser()` |
+| `NotificationContext` | `notifications`, `unreadCount`, `markRead()`, `addNotification()` |
+
+---
+
+## Performance Optimizations
+
+- **Route-level code splitting** — each dashboard page is a separate JS chunk  
+- **Manual chunk splitting** (vite.config.js) — `vendor-react`, `vendor-recharts`, `vendor-icons`, `vendor-axios`  
+- **`es2020` build target** — eliminates dead transforms for modern browsers  
+- **Immutable asset caching** — `Cache-Control: max-age=31536000, immutable` on `/assets/*` (vercel.json)  
+- **`useApiRequest` cleanup** — prevents state updates on unmounted components  
+- **`useFetch` cleanup** — `isMounted` guard cancels stale responses
+
+---
+
+## Deployment
+
+### Vercel (recommended)
+
+1. Connect your GitHub repo to [vercel.com](https://vercel.com)  
+2. Set **Build Command** → `npm run build`  
+3. Set **Output Directory** → `dist`  
+4. Add environment variables from `.env.production` in the Vercel dashboard  
+5. Vercel picks up `vercel.json` automatically (SPA rewrites + security headers)
+
+### Other static hosts (Netlify, AWS S3, etc.)
+
+```bash
+npm run build
+# Upload the dist/ folder
+# Add a rewrite rule: /* → /index.html (SPA fallback)
+```
+
+---
+
+## Browser Support
+
+Targets the last 2 versions of Chrome, Firefox, Safari, and Edge (ES2020+).  
+IE 11 is **not** supported.
+
+---
+
+*Built with React + Vite + Tailwind CSS — Smart Retail Platform*
+
