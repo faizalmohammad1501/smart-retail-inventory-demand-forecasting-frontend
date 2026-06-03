@@ -1,39 +1,42 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 // Custom hook for fetching data
 export const useFetch = (fetchFunction, dependencies = []) => {
-  const [data, setData] = useState(null)
+  const [data, setData]       = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError]     = useState(null)
+  const isMountedRef          = useRef(true)
 
-  useEffect(() => {
-    let isMounted = true
-
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const result = await fetchFunction()
-        if (isMounted) {
-          setData(result.data)
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err.message || 'An error occurred')
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
+  // fetchData is stable so it can be safely exposed as `refetch`
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await fetchFunction()
+      if (isMountedRef.current) {
+        setData(result?.data ?? result)
+      }
+    } catch (err) {
+      if (isMountedRef.current) {
+        setError(
+          err?.response?.data?.message || err?.message || 'An error occurred'
+        )
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false)
       }
     }
-
-    fetchData()
-
-    return () => {
-      isMounted = false
-    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, dependencies)
+
+  useEffect(() => {
+    isMountedRef.current = true
+    fetchData()
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [fetchData])
 
   return { data, loading, error, refetch: fetchData }
 }

@@ -38,16 +38,16 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard"     element={<Suspense fallback={<PageLoader message="Loading dashboard…" />}><Dashboard /></Suspense>} />
-        <Route path="inventory"     element={<Suspense fallback={<PageLoader message="Loading inventory…" />}><Inventory /></Suspense>} />
-        <Route path="forecast"      element={<Suspense fallback={<PageLoader message="Loading forecast…" />}><Forecast /></Suspense>} />
-        <Route path="reports"       element={<Suspense fallback={<PageLoader message="Loading reports…" />}><Reports /></Suspense>} />
-        <Route path="suppliers"     element={<Suspense fallback={<PageLoader message="Loading suppliers…" />}><Suppliers /></Suspense>} />
-        <Route path="orders"        element={<Suspense fallback={<PageLoader message="Loading orders…" />}><Orders /></Suspense>} />
-        <Route path="notifications" element={<Suspense fallback={<PageLoader message="Loading notifications…" />}><Notifications /></Suspense>} />
-        <Route path="profile"       element={<Suspense fallback={<PageLoader message="Loading profile…" />}><Profile /></Suspense>} />
-        <Route path="settings"      element={<Suspense fallback={<PageLoader message="Loading settings…" />}><Settings /></Suspense>} />
-        <Route path="users"         element={<Suspense fallback={<PageLoader message="Loading users…" />}><UserManagement /></Suspense>} />
+        <Route path="dashboard"     element={<Suspense fallback={<PageLoader fullScreen={false} message="Loading dashboard…" />}><Dashboard /></Suspense>} />
+        <Route path="inventory"     element={<Suspense fallback={<PageLoader fullScreen={false} message="Loading inventory…" />}><Inventory /></Suspense>} />
+        <Route path="forecast"      element={<Suspense fallback={<PageLoader fullScreen={false} message="Loading forecast…" />}><Forecast /></Suspense>} />
+        <Route path="reports"       element={<Suspense fallback={<PageLoader fullScreen={false} message="Loading reports…" />}><Reports /></Suspense>} />
+        <Route path="suppliers"     element={<Suspense fallback={<PageLoader fullScreen={false} message="Loading suppliers…" />}><Suppliers /></Suspense>} />
+        <Route path="orders"        element={<Suspense fallback={<PageLoader fullScreen={false} message="Loading orders…" />}><Orders /></Suspense>} />
+        <Route path="notifications" element={<Suspense fallback={<PageLoader fullScreen={false} message="Loading notifications…" />}><Notifications /></Suspense>} />
+        <Route path="profile"       element={<Suspense fallback={<PageLoader fullScreen={false} message="Loading profile…" />}><Profile /></Suspense>} />
+        <Route path="settings"      element={<Suspense fallback={<PageLoader fullScreen={false} message="Loading settings…" />}><Settings /></Suspense>} />
+        <Route path="users"         element={<Suspense fallback={<PageLoader fullScreen={false} message="Loading users…" />}><UserManagement /></Suspense>} />
       </Route>
 
       {/* Catch all — dedicated 404 page */}
